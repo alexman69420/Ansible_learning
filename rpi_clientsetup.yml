@@ -4,12 +4,21 @@
   become: true
   tasks:
 
-    - shell: ls -la
+    - name: List available files
+      shell: ls -la
       register: shell_result
 
 
     - debug:
         var: shell_result.stdout_lines
+
+
+    - name: Get the MAC address
+      debug: msg="{{ hostvars[inventory_hostname] }}"
     
+
+    - name: Use the mac address to set interfaces bitch
+      debug: msg="{{ hostvars[inventory_hostname].ansible_default_ipv4.macaddress }}"
     
-      
+
+   
