@@ -21,4 +21,14 @@
       debug: msg="{{ hostvars[inventory_hostname].ansible_default_ipv4.macaddress }}"
     
 
-   
+    - name: Configure consistence interfaces
+      shell: |
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"
+        {{ hostvars[inventory_hostname].ansible_default_ipv4.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"
+        eth_service\"" > /etc/udev/rules.d/70-persistent-net.rules
+      register: shell2_result
+
+
+    - debug:
+        var: shell2_result.stdout_lines
+
