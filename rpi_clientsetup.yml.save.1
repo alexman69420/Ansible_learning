@@ -1,0 +1,34 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+b8:27:eb:3d:c1:b5
+   # - name: List available files
+    #  shell: ls -la
+     # register: shell_result
+
+
+   # - debug:
+    #    var: shell_result.stdout_lines
+
+
+    #- name: Get the MAC address
+     # debug: msg="{{ hostvars[inventory_hostname] }}"
+    
+
+    - name: Use the mac address to set interfaces bitch
+      debug: msg="{{ hostvars[inventory_hostname].ansible_default_ipv4.macaddress }}"
+    
+
+    - name: Configure consistence interfaces
+      shell: |
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"
+        b8:27:eb:3d:c1:b5\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"
+        eth0\"" > /etc/udev/rules.d/70-persistent-net.rules
+      register: shell2_result
+
+
+    - debug:
+        var: shell2_result.stdout_lines
+

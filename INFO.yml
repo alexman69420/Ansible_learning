@@ -1,0 +1,12 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+    
+    - name: Get the MAC address
+      debug: msg="{{ hostvars[inventory_hostname] }}"
+    
+
+   
