@@ -2,6 +2,7 @@
 
 - hosts: all
   become: true
+  ignore_errors: yes
   tasks:
 
     - name: List available files
@@ -48,7 +49,7 @@
         system: yes
 
 
-    - name: Reboot
+    - name: Plume configs
       shell: |
         echo 'plume ALL=(ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/plume > /dev/null
         sudo chmod 0400 /etc/sudoers.d/plume
@@ -63,5 +64,77 @@
         sudo chown -R plume.plume /home/plume/.ssh
 
 
-        
+    - name: Reboot a slow machine that might have lots of updates to apply
+      reboot:
+    
       
+    - name: Update apt-get repo and cache
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+      become: true
+
+
+    - name: Upgrade all apt packages
+      apt: upgrade=dist force_apt_get=yes
+      become: true
+
+
+    - name: Apt get install many things
+      apt:
+        name: 
+          - iperf
+          - iperf3
+          - expect
+          - speedtest-cli
+          - miniupnpc
+          - dnsutils
+          - vim
+          - bridge-utils
+          - build-essential
+          - dos2unix
+          - fakeroot
+          - nmap
+          - sshpass 
+          - traceroute
+          - zip
+          - unzip
+          - wireless-tools
+          - wpasupplicant
+          - vlan
+          - python-pexpect
+        state: present
+        update_cache: true
+      become: true
+
+
+    - name: Plume configs
+      become: true
+      become_user: root
+      shell: |
+        sudo update-alternatives --set editor /usr/bin/vim.tiny
+        echo "syntax on
+        set ignorecase
+        set ruler
+        set mouse=n" > /home/plume/.vimrc
+        sudo touch /root/.vimrc
+        echo "os=rpi" | sudo tee /tb.conf > /dev/null
+        echo "wifi=802.11n" | sudo tee -a /tb.conf > /dev/null
+        echo "mimo=2x2" | sudo tee -a /tb.conf > /dev/null
+        echo "" | sudo tee -a /tb.conf > /dev/null 
+        echo "WIFI_MON_IF=wlan0" | sudo tee /tbvars.conf > /dev/null
+        echo "WIFI_IF=wlan0" | sudo tee -a /tbvars.conf > /dev/null
+        echo "" | sudo tee -a /tbvars.conf > /dev/null
+        echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+        update_config=1
+        country=SI
+        
+        network={
+                ssid=\"ref-pi\"
+                psk=\"welcome8\"
+                proto=RSN
+                key_mgmt=WPA-PSK
+                scan_ssid=1
+                priority=1
+                # bssid=34:7a:60:2f:47:03
+        }"
+        
+
