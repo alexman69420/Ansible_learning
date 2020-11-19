@@ -135,6 +135,6 @@
                 scan_ssid=1
                 priority=1
                 # bssid=34:7a:60:2f:47:03
-        }"
+        }" > /etc/wpa_supplicant/wpa_supplicant.conf
         
 
