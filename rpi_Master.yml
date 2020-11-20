@@ -2,44 +2,27 @@
 
 - hosts: all
   become: true
-  ignore_errors: yes
+  ignore_errors: yes #Commented out to stop on errors 
   tasks:
-
-    - name: List available files
-      shell: ls -la
-      register: shell_result
-
-
-    - debug:
-        var: shell_result.stdout_lines
-
-
+  
+  
     - name: Get the MAC address
       debug: msg="{{ hostvars[inventory_hostname] }}"
-    
-
-    - name: Use the mac address to set interfaces bitch
-      debug: msg="{{ hostvars[inventory_hostname].ansible_default_ipv4.macaddress }}"
-    
-
+  
     - name: Configure consistence interfaces
       shell: |
         echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_eth1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"eth_service\"
         SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_wlan1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"wlan0\"" > /etc/udev/rules.d/70-persistent-net.rules
       register: shell2_result
-
-
-    - debug:
-        var: shell2_result.stdout_lines
-
-
+      
+      
     - name: Remove Raspberry Pi WiFi interface
       shell: |
         echo "blacklist brcmfmac
         blacklist brcmutil" > /etc/modprobe.d/raspi-blacklist.conf
       register: shell_result
 
-
+#Change 23 to input ssh public key 
     - name: Create a login user
       user:
         name: plume
@@ -49,20 +32,24 @@
         system: yes
 
 
+    - name: Copy file with owner and permissions
+      copy:
+        src: "/home/alex/Ansible_learning/keys/key.pub"
+        dest: "/root/.ssh/authorized_keys/key.pub"
+        mode: "preserve"
+
+
     - name: Plume configs
       shell: |
-        echo 'plume ALL=(ALL) NOPASSWD: ALL' | sudo tee /etc/sudoers.d/plume > /dev/null
-        sudo chmod 0400 /etc/sudoers.d/plume
-        echo "" | sudo tee -a /etc/profile > /dev/null
-        echo "### Localisation" | sudo tee -a /etc/profile > /dev/null
-        echo "export LANGUAGE=C" | sudo tee -a /etc/profile > /dev/null
-        echo "export LC_ALL=C" | sudo tee -a /etc/profile > /dev/null
-        sudo mkdir -p /home/plume/.ssh
-        sudo chmod 700 /home/plume/.ssh
-        sudo touch /home/plume/.ssh/authorized_keys
-        sudo chmod 664 /home/plume/.ssh/authorized_keys
-        sudo chown -R plume.plume /home/plume/.ssh
-
+        sudo mkdir -p /root/.ssh/
+        sudo chmod 700 /root/.ssh
+        sudo touch /root/.ssh/authorized_keys
+        sudo chmod 664 /root/.ssh/authorized_keys
+        #sudo echo "{{lookup('file', '/home/alex/Ansible_learning/keys/key.pub') }}" >> /root/.ssh/authorized_keys/key.pub
+        chmod 600 /root/.ssh/authorized_keys/key.pub
+        
+        
+#    - debug: msg="the value of foo.txt is {{lookup('file', '/etc/foo.txt') }}"
 
     - name: Reboot a slow machine that might have lots of updates to apply
       reboot:
@@ -70,11 +57,6 @@
       
     - name: Update apt-get repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
-      become: true
-
-
-    - name: Upgrade all apt packages
-      apt: upgrade=dist force_apt_get=yes
       become: true
 
 
@@ -123,18 +105,31 @@
         echo "WIFI_MON_IF=wlan0" | sudo tee /tbvars.conf > /dev/null
         echo "WIFI_IF=wlan0" | sudo tee -a /tbvars.conf > /dev/null
         echo "" | sudo tee -a /tbvars.conf > /dev/null
-        echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-        update_config=1
-        country=SI
-        
-        network={
-                ssid=\"ref-pi\"
-                psk=\"welcome8\"
-                proto=RSN
-                key_mgmt=WPA-PSK
-                scan_ssid=1
-                priority=1
-                # bssid=34:7a:60:2f:47:03
-        }" > /etc/wpa_supplicant/wpa_supplicant.conf
+        echo "network={​​
+        ssid=\"PodWifi\"
+        psk=\"password\"
+        proto=RSN
+        key_mgmt=WPA-PSK
+        scan_ssid=1
+        priority=1
+        #bssid=BE:17:10:FC:0E:DD
+        }​​" > /etc/wpa_supplicant/wpa_supplicant.conf
         
 
+    - name: Configure consistence interfaces
+      shell: |
+        echo "auto eth_service
+        iface eth_service inet dhcp" >> /etc/network/interfaces
+
+        
+    - name: Configure consistence interfaces
+      shell: |
+        echo "[Match]
+        Name=eth_service
+        [Network]
+        DHCP=yes" > /etc/systemd/network/80-dhcp.network
+        
+    - name: Plume configs
+      shell: |
+        sudo systemctl disable NetworkManager
+        
