@@ -83,8 +83,35 @@
         echo "WIFI_MON_IF=wlan0" | sudo tee /tbvars.conf > /dev/null
         echo "WIFI_IF=wlan0" | sudo tee -a /tbvars.conf > /dev/null
         echo "" | sudo tee -a /tbvars.conf > /dev/null
-        echo "network={​​ ssid=\"PodWifi\" psk=\"password\" proto=RSN key_mgmt=WPA-PSK scan_ssid=1 priority=1 #bssid=BE:17:10:FC:0E:DD }​​" > /etc/wpa_supplicant/wpa_supplicant.conf
-        
+
+
+#    - name: Plume configs
+#      shell: | 
+#        echo "network={
+#        ssid=\"PodWifi\"
+#        psk=\"password\"
+#        proto=RSN
+#        key_mgmt=WPA-PSK
+#        scan_ssid=1
+#        priority=1
+#        #bssid=BE:17:10:FC:0E:DD
+#        }"
+
+
+    - name: Ansible create file with content 
+      copy:
+        dest: "/etc/wpa_supplicant/wpa_supplicant.conf"
+        content: |
+          network={
+                  ssid="PodWifi"
+                  psk="password"
+                  proto=RSN
+                  key_mgmt=WPA-PSK
+                  scan_ssid=1
+                  priority=1
+                  #bssid=BE:17:10:FC:0E:DD
+          }
+
         
     - name: Plume configs
       become: true
