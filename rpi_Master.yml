@@ -22,38 +22,83 @@
         blacklist brcmutil" > /etc/modprobe.d/raspi-blacklist.conf
       register: shell_result
 
-#Change 23 to input ssh public key 
-    - name: Create a login user
-      user:
-        name: plume
-        password: '$6$v7/89Jsz$7NIINXdB11MX8xObWRlmPzCSLQJ6U3Za4EREx8ghyMhb2Hrk3j9fBMyIzwzbBdPMIt0yKDxa3oglBS2rOVD3b/'
-        groups: sudo, plume
-        state: present
-        system: yes
+
+    #- name: Copy file with owner and permissions
+     # copy:
+      #  src: "/home/alex/Ansible_learning/keys/key.pub"
+       # dest: "/root/.ssh/authorized_keys/key.pub"
+        #mode: "preserve"
 
 
-    - name: Copy file with owner and permissions
-      copy:
-        src: "/home/alex/Ansible_learning/keys/key.pub"
-        dest: "/root/.ssh/authorized_keys/key.pub"
-        mode: "preserve"
-
-
-    - name: Plume configs
-      shell: |
-        sudo mkdir -p /root/.ssh/
-        sudo chmod 700 /root/.ssh
-        sudo touch /root/.ssh/authorized_keys
-        sudo chmod 664 /root/.ssh/authorized_keys
+    #- name: Plume configs
+      #shell: |
+        #sudo mkdir -p /root/.ssh/
+        #sudo chmod 700 /root/.ssh
+        #sudo touch /root/.ssh/authorized_keys
+        #sudo chmod 664 /root/.ssh/authorized_keys
         #sudo echo "{{lookup('file', '/home/alex/Ansible_learning/keys/key.pub') }}" >> /root/.ssh/authorized_keys/key.pub
-        chmod 600 /root/.ssh/authorized_keys/key.pub
+        #chmod 600 /root/.ssh/authorized_keys/key.pub
         
         
 #    - debug: msg="the value of foo.txt is {{lookup('file', '/etc/foo.txt') }}"
 
+
+    - name: Configure consistence interfaces
+      shell: |
+        echo "auto eth_service
+        iface eth_service inet dhcp" >> /etc/network/interfaces
+
+
+    - name: Configure consistence interfaces
+      shell: |
+        echo "[Match]
+        Name=eth_service
+        [Network]
+        DHCP=yes" > /etc/systemd/network/80-dhcp.network
+        
+        
+    - name: Plume configs
+      shell: |
+        sudo systemctl disable NetworkManager
+        
+        
     - name: Reboot a slow machine that might have lots of updates to apply
       reboot:
     
+    
+    - name: Plume configs
+      become: true
+      become_user: root
+      shell: |
+        sudo update-alternatives --set editor /usr/bin/vim.tiny
+        echo "syntax on
+        set ignorecase
+        set ruler
+        set mouse=n" > /home/plume/.vimrc
+        sudo touch /root/.vimrc
+        echo "os=rpi" | sudo tee /tb.conf > /dev/null
+        echo "wifi=802.11n" | sudo tee -a /tb.conf > /dev/null
+        echo "mimo=2x2" | sudo tee -a /tb.conf > /dev/null
+        echo "" | sudo tee -a /tb.conf > /dev/null 
+        echo "WIFI_MON_IF=wlan0" | sudo tee /tbvars.conf > /dev/null
+        echo "WIFI_IF=wlan0" | sudo tee -a /tbvars.conf > /dev/null
+        echo "" | sudo tee -a /tbvars.conf > /dev/null
+        echo "network={​​ ssid=\"PodWifi\" psk=\"password\" proto=RSN key_mgmt=WPA-PSK scan_ssid=1 priority=1 #bssid=BE:17:10:FC:0E:DD }​​" > /etc/wpa_supplicant/wpa_supplicant.conf
+        
+        
+    - name: Plume configs
+      become: true
+      become_user: root
+      shell: | 
+        wpa_supplicant -Dnl80211 -iwlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf -B
+        
+        
+    - name: Plume configs
+      become: true
+      become_user: root
+      shell: | 
+        dhclient wlan0
+      
       
     - name: Update apt-get repo and cache
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
@@ -88,48 +133,5 @@
       become: true
 
 
-    - name: Plume configs
-      become: true
-      become_user: root
-      shell: |
-        sudo update-alternatives --set editor /usr/bin/vim.tiny
-        echo "syntax on
-        set ignorecase
-        set ruler
-        set mouse=n" > /home/plume/.vimrc
-        sudo touch /root/.vimrc
-        echo "os=rpi" | sudo tee /tb.conf > /dev/null
-        echo "wifi=802.11n" | sudo tee -a /tb.conf > /dev/null
-        echo "mimo=2x2" | sudo tee -a /tb.conf > /dev/null
-        echo "" | sudo tee -a /tb.conf > /dev/null 
-        echo "WIFI_MON_IF=wlan0" | sudo tee /tbvars.conf > /dev/null
-        echo "WIFI_IF=wlan0" | sudo tee -a /tbvars.conf > /dev/null
-        echo "" | sudo tee -a /tbvars.conf > /dev/null
-        echo "network={​​
-        ssid=\"PodWifi\"
-        psk=\"password\"
-        proto=RSN
-        key_mgmt=WPA-PSK
-        scan_ssid=1
-        priority=1
-        #bssid=BE:17:10:FC:0E:DD
-        }​​" > /etc/wpa_supplicant/wpa_supplicant.conf
-        
 
-    - name: Configure consistence interfaces
-      shell: |
-        echo "auto eth_service
-        iface eth_service inet dhcp" >> /etc/network/interfaces
-
-        
-    - name: Configure consistence interfaces
-      shell: |
-        echo "[Match]
-        Name=eth_service
-        [Network]
-        DHCP=yes" > /etc/systemd/network/80-dhcp.network
-        
-    - name: Plume configs
-      shell: |
-        sudo systemctl disable NetworkManager
-        
+      

@@ -1,1 +1,2 @@
-root@10.1.100.185
+[RPIS]
+10.138.18.79:60204 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
