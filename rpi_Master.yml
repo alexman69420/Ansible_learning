@@ -10,6 +10,12 @@
       debug: msg="{{ hostvars[inventory_hostname] }}"
 
 
+    - name: create directory ssh for ssh keys 
+      file:
+        path: /root/.ssh/
+        state: directory
+        
+        
     - name: Copy the local public key to remote RPI
       copy:
         src: /home/alex/.ssh/id_rsa.pub
@@ -23,11 +29,14 @@
         RSAAuthentication yes" >> /etc/ssh/sshd_config
 
   
-    - name: Configure consistence interfaces
+    - name: Configure consistence Ethernet interface
       shell: |
-        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_eth1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"eth_service\"
-        SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_wlan1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"wlan0\"" > /etc/udev/rules.d/70-persistent-net.rules
-      register: shell2_result
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_eth1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"eth_service\"" > /etc/udev/rules.d/70-persistent-net.rules
+        
+      
+    - name: Configure consistence Wifi interface
+      shell: |
+        echo "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"{{ hostvars[inventory_hostname].ansible_wlan1.macaddress }}\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", NAME=\"wlan0\"" >> /etc/udev/rules.d/70-persistent-net.rules
       
       
     - name: Remove Raspberry Pi WiFi interface

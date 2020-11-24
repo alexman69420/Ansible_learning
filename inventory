@@ -1,3 +1,12 @@
-[RPIS]
+[RPIB]
 #10.138.18.79:60204 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
-10.21.23.162:60201 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
+#10.21.23.162:60201 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
+rpib ansible_port=60201 ansible_host=10.21.23.162 ansible_user=root
+
+[RPIC1]
+#10.21.23.162:60204 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
+rpic1 ansible_port=60203 ansible_host=10.21.23.162 ansible_user=root
+
+[RPIC2]
+#10.21.23.162:60206 ansible_user=root ansible_ssh_private_key_file=/home/alex/.ssh/id_rsa
+rpic2 ansible_port=60206 ansible_host=10.21.23.162 ansible_user=root
