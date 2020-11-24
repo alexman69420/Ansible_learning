@@ -8,6 +8,19 @@
   
     - name: Get the MAC address
       debug: msg="{{ hostvars[inventory_hostname] }}"
+
+
+    - name: Copy the local public key to remote RPI
+      copy:
+        src: /home/alex/.ssh/id_rsa.pub
+        dest: /root/.ssh/authorized_keys
+
+
+    - name: Change RPIs to allow RSA&PubkeyAuthentication
+      shell: |
+        echo "PubkeyAuthentication yes
+        RSAAuthentication yes" >> /etc/ssh/sshd_config
+
   
     - name: Configure consistence interfaces
       shell: |
