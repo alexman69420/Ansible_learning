@@ -18,7 +18,7 @@
 
     - name: Change RPIs to allow RSA&PubkeyAuthentication
       shell: |
-        sed -i -e 's/PubkeyAuthentication//g' /etc/ssh/sshd_config
+        sed -i -e 's/PubkeyAuthentication no//g' /etc/ssh/sshd_config
         echo "PubkeyAuthentication yes
         RSAAuthentication yes" >> /etc/ssh/sshd_config
 
